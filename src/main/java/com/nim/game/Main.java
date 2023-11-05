@@ -7,6 +7,7 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 
 import com.nim.game.util.Helper;
+
 import static com.nim.game.util.Helper.loadView;
 
 public class Main extends Application

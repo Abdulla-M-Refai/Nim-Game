@@ -10,7 +10,7 @@
 <AnchorPane fx:id="anchorPane" onMouseClicked="#onAnchorClick" prefHeight="400.0" prefWidth="600.0" styleClass="main-container" stylesheets="@../assets/css/common.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nim.game.controller.GameController">
    <children>
       <Button focusTraversable="false" layoutX="25.0" layoutY="34.0" mnemonicParsing="false" onAction="#leaveGame" styleClass="shiny-orange" text="Leave" />
-      <Rectangle fx:id="computerTimeContainer" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="55.0" layoutX="479.0" layoutY="21.0" stroke="BLACK" strokeType="INSIDE" styleClass="time-container" width="140.0" />
+      <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="55.0" layoutX="479.0" layoutY="21.0" stroke="BLACK" strokeType="INSIDE" styleClass="time-container" width="140.0" />
       <Label layoutX="479.0" layoutY="33.0" prefHeight="30.0" prefWidth="140.0" style="-fx-alignment: center;" text="Computer" textAlignment="CENTER">
          <font>
             <Font name="System Bold" size="20.0" />

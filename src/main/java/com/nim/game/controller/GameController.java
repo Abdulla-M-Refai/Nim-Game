@@ -5,12 +5,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.application.Platform;
 
+import javafx.stage.Stage;
+
 import javafx.scene.Node;
 
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-
-import javafx.stage.Stage;
 
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.GridPane;
@@ -18,12 +18,20 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.AnchorPane;
 
 import javafx.scene.control.Label;
+import javafx.scene.control.Alert;
+
 import javafx.scene.shape.Rectangle;
 
-import javafx.geometry.Pos;
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
+import javafx.animation.Animation;
 
-import java.util.*;
+import javafx.geometry.Pos;
+import javafx.util.Duration;
+
 import java.net.URL;
+import java.util.Random;
+import java.util.ResourceBundle;
 
 import java.io.IOException;
 
@@ -34,12 +42,8 @@ import com.nim.game.listener.NimClickListener;
 
 public class GameController implements Initializable
 {
-    int x;
     @FXML
     private AnchorPane anchorPane;
-
-    @FXML
-    private Rectangle computerTimeContainer;
 
     @FXML
     private StackPane gamePane;
@@ -60,79 +64,94 @@ public class GameController implements Initializable
 
     private boolean playerTurn;
 
-    private Timer timer;
+    private double timerContainerWidth;
+
+    private Timeline timeline;
 
     @FXML
     void onAnchorClick(MouseEvent event)
     {
-        if (event.getButton() == MouseButton.SECONDARY)
-        {
-            countDown = 0;
-        }
+        if (event.getButton() == MouseButton.SECONDARY && playerTurn)
+            flipPlayers();
     }
 
     private void startGame()
     {
         countDown = getTime();
-        final double width = playerTimeContainer.getWidth();
-
-        timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask()
+        timeline = new Timeline(new KeyFrame(Duration.seconds(1), ev ->
         {
-            @Override
-            public void run()
+            if(playerTurn)
             {
-                if(countDown-- >= 0)
-                {
-                    if(playerTurn)
-                    {
-                        gamePane.setDisable(false);
-                        playerTimeContainer.setWidth((countDown * width)/getTime());
-                    }
-                    else
-                    {
-                        gamePane.setDisable(true);
-                        computerTimeContainer.setWidth((countDown * width)/getTime());
-                    }
-
-                    return;
-                }
-
-                selectedPile = -1;
-                countDown = getTime();
-                playerTurn = !playerTurn;
-
-                playerTimeContainer.setWidth(width);
-                computerTimeContainer.setWidth(width);
-
-                if(isGameOver())
-                {
-                    leaveGame();
-                }
+                playerTimeContainer.setWidth((countDown * timerContainerWidth) / getTime());
+                ensurePlayerMovement();
+                countDown--;
             }
-        }, Calendar.getInstance().getTime(), 1000);
+            else
+            {
+                flipPlayers();
+            }
+
+            if(isGameOver(piles))
+            {
+                stopGame();
+                showGameResult();
+                leaveGame();
+            }
+        }));
+
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
     }
 
-    private boolean isGameOver()
+    private void ensurePlayerMovement()
     {
-        for(Integer pile : piles)
-            if(pile != 0)
-                return true;
-
-        return false;
-    }
-
-    public void stopGame()
-    {
-        if (timer != null)
+        if(playerTurn && countDown == 0 && selectedPile == -1)
         {
-            timer.cancel();
-            timer.purge();
-            timer = null;
+            Random random = new Random();
+            int row = random.nextInt(piles.length);
+
+            while(piles[row] == 0)
+                row = random.nextInt(piles.length);
+
+            int column = 0;
+
+            for(Node node : gameGrid.getChildren())
+                if(node instanceof AnchorPane && GridPane.getRowIndex(node) == row)
+                    column = GridPane.getColumnIndex(node);
+
+            chooseNim(row, column);
+            flipPlayers();
         }
     }
 
-    private void nimClickEvent(int row, int column)
+    private void flipPlayers()
+    {
+        selectedPile = -1;
+        countDown = getTime();
+        playerTurn = !playerTurn;
+        gamePane.setDisable(!playerTurn);
+        playerTimeContainer.setWidth(timerContainerWidth);
+    }
+
+    private boolean isGameOver(int []piles)
+    {
+        for(int pile : piles)
+            if (pile > 0)
+                return false;
+
+        return true;
+    }
+
+    private void showGameResult()
+    {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Game Over");
+        alert.setHeaderText(null);
+        alert.setContentText(playerTurn ? getPlayerName() + " Wins The Game!" : "Computer Wins The Game!");
+        alert.show();
+    }
+
+    private void chooseNim(int row, int column)
     {
         if(selectedPile == -1)
             selectedPile = row;
@@ -153,6 +172,15 @@ public class GameController implements Initializable
     {
         stopGame();
         loadView("view/main-menu.fxml", (Stage)anchorPane.getScene().getWindow(), anchorPane);
+    }
+
+    public void stopGame()
+    {
+        if (timeline != null)
+        {
+            timeline.stop();
+            timeline = null;
+        }
     }
 
     private GridPane createGraphicalGameGrid()
@@ -185,7 +213,7 @@ public class GameController implements Initializable
             }
         }
 
-        NimClickListener nimClickListener = this::nimClickEvent;
+        NimClickListener nimClickListener = this::chooseNim;
 
         for(int i = 0 ; i < nimLevels ; i++)
         {
@@ -232,6 +260,9 @@ public class GameController implements Initializable
         startGame();
 
         Platform.runLater(() -> {
+            gamePane.setDisable(!playerTurn);
+            timerContainerWidth = playerTimeContainer.getWidth();
+
             Stage stage = (Stage) anchorPane.getScene().getWindow();
             stage.setOnCloseRequest(event -> stopGame());
         });
