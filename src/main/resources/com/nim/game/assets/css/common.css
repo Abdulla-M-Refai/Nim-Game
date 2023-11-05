@@ -1,0 +1,80 @@
+
+.main-container
+{
+    -fx-pref-width: 800px;
+    -fx-pref-height: 600px;
+
+    -fx-background-image: url("../image/background.jpg");
+    -fx-background-size: 100% 100%;
+}
+
+.game-pane
+{
+    -fx-pref-width: 750px;
+    -fx-pref-height: 500px;
+}
+
+.pane
+{
+    -fx-pref-width: 300px;
+    -fx-pref-height: 300px;
+}
+
+.rectangle
+{
+    -fx-arc-height: 20;
+    -fx-arc-width: 20;
+    -fx-stroke: none;
+
+    -fx-fill: #FFFFFF;
+    -fx-opacity: 0.7;
+}
+
+.time-container
+{
+    -fx-arc-height: 50;
+    -fx-arc-width: 50;
+    -fx-stroke: none;
+
+    -fx-fill: DODGERBLUE;
+    -fx-opacity: 0.8;
+}
+
+.nim-container
+{
+    -fx-pref-width: 50px;
+    -fx-pref-height: 50px;
+
+    -fx-cursor: hand;
+    -fx-background-color: transparent;
+}
+
+.nim-card
+{
+    -fx-width: 100;
+    -fx-height: 100;
+
+    -fx-arc-height: 15;
+    -fx-arc-width: 15;
+    -fx-stroke: none;
+
+    -fx-fill: DODGERBLUE;
+    -fx-opacity: 0.8;
+}
+
+.shiny-orange {
+    -fx-background-color:
+            linear-gradient(#ffd65b, #e68400),
+            linear-gradient(#ffef84, #f2ba44),
+            linear-gradient(#ffea6a, #efaa22),
+            linear-gradient(#ffe657 0%, #f8c202 50%, #eea10b 100%),
+            linear-gradient(from 0% 0% to 15% 50%, rgba(255,255,255,0.9), rgba(255,255,255,0));
+    -fx-background-radius: 30;
+    -fx-background-insets: 0,1,2,3,0;
+
+    -fx-text-fill: #000000;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+
+    -fx-cursor: hand;
+}
