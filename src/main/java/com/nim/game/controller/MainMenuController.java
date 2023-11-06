@@ -54,15 +54,17 @@ public class MainMenuController implements Initializable
 
     private ImageView toggleMuteButtonView;
 
-    private boolean mute = getMute();
+    private boolean mute;
 
-    private GameType type = getType();
+    private String playerName;
 
-    private GameLevel gameLevel = getLevel();
+    private GameType type;
 
-    private int time = getTime();
+    private GameLevel gameLevel;
 
-    private int nim = getNim();
+    private int time;
+
+    private int nim;
 
     @FXML
     void setGameType()
@@ -139,7 +141,16 @@ public class MainMenuController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle)
     {
-        nameField.setText(getPlayerName());
+        playerName = getPlayerName();
+        mute = getMute();
+
+        type = getType();
+        gameLevel = getLevel();
+
+        time = getTime();
+        nim = getNim();
+
+        nameField.setText(playerName);
 
         gameType.getItems()
             .addAll(

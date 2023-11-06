@@ -49,7 +49,7 @@ public class GameController implements Initializable
     private StackPane gamePane;
 
     @FXML
-    private Label playerName;
+    private Label playerNameLabel;
 
     @FXML
     private Rectangle playerTimeContainer;
@@ -60,38 +60,55 @@ public class GameController implements Initializable
 
     private int selectedPile;
 
-    private int countDown;
-
     private boolean playerTurn;
 
     private double timerContainerWidth;
 
     private Timeline timeline;
 
+    private String playerName;
+
+    private int depth;
+
+    private int time;
+
+    private int countDown;
+
+    private int nim;
+
     @FXML
     void onAnchorClick(MouseEvent event)
     {
         if (event.getButton() == MouseButton.SECONDARY && playerTurn)
-            flipPlayers();
+            countDown = 0;
     }
 
     private void startGame()
     {
-        countDown = getTime();
+        countDown = time;
         timeline = new Timeline(new KeyFrame(Duration.seconds(1), ev ->
         {
             if(playerTurn)
             {
-                playerTimeContainer.setWidth((countDown * timerContainerWidth) / getTime());
-                ensurePlayerMovement();
-                countDown--;
+                if(countDown > 0)
+                {
+                    countDown--;
+                    playerTimeContainer.setWidth((countDown * timerContainerWidth) / time);
+                }
+                else
+                {
+                    System.out.println("sss");
+                    ensurePlayerMovement();
+                    flipPlayers();
+                }
             }
             else
             {
+                computerMove();
                 flipPlayers();
             }
 
-            if(isGameOver(piles))
+            if(isGameOver())
             {
                 stopGame();
                 showGameResult();
@@ -120,20 +137,138 @@ public class GameController implements Initializable
                     column = GridPane.getColumnIndex(node);
 
             chooseNim(row, column);
-            flipPlayers();
         }
+    }
+
+    private void computerMove()
+    {
+        int[] result = alphaBeta(piles, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+        int pileIndex = result[1];
+        int nimCountToRemove = result[2];
+
+         int index = 0;
+         int count = 0;
+
+         for(int i = 0 ; i < piles.length ; i++)
+         {
+             if(piles[i] > 0)
+             {
+                count++;
+                index = i;
+             }
+         }
+
+        if(count == 1 && nimCountToRemove == piles[index] && nimCountToRemove != 1)
+            nimCountToRemove--;
+
+        for(int j = 0 ; j < nimCountToRemove ; j++)
+        {
+            int column = 0;
+            for(Node node : gameGrid.getChildren())
+                if(node instanceof AnchorPane && GridPane.getRowIndex(node) == pileIndex)
+                    column = GridPane.getColumnIndex(node);
+
+            chooseNim(pileIndex, column);
+        }
+    }
+
+    public static int[] alphaBeta(int[] piles, int depth, int alpha, int beta, boolean isMax)
+    {
+        if (depth == 0)
+        {
+            int value = evaluate(piles);
+            return new int[]{value, -1};
+        }
+
+        if (isMax)
+        {
+            int maxEval = Integer.MIN_VALUE;
+            int pileIndex = -1;
+            int bestMove = -1;
+
+            for (int i = 0; i < piles.length; i++)
+            {
+                for (int j = 1; j <= piles[i]; j++)
+                {
+                    if (piles[i] - j >= 0)
+                    {
+                        piles[i] -= j;
+                        int[] evalResult = alphaBeta(piles, depth - 1, alpha, beta, false);
+                        int eval = evalResult[0];
+
+                        if (eval > maxEval)
+                        {
+                            maxEval = eval;
+                            pileIndex = i;
+                            bestMove = j;
+                        }
+
+                        alpha = Math.max(alpha, eval);
+                        piles[i] += j;
+
+                        if (beta <= alpha)
+                            break;
+                    }
+                }
+            }
+
+            return new int[]{maxEval, pileIndex, bestMove};
+        }
+        else
+        {
+            int minEval = Integer.MAX_VALUE;
+            int pileIndex = -1;
+            int bestMove = -1;
+
+            for (int i = 0; i < piles.length; i++)
+            {
+                for (int j = 1; j <= piles[i]; j++)
+                {
+                    if (piles[i] - j >= 0)
+                    {
+                        piles[i] -= j;
+                        int[] evalResult = alphaBeta(piles, depth - 1, alpha, beta, true);
+                        int eval = evalResult[0];
+
+                        if (eval < minEval)
+                        {
+                            minEval = eval;
+                            pileIndex = i;
+                            bestMove = j;
+                        }
+
+                        beta = Math.min(beta, eval);
+                        piles[i] += j;
+
+                        if (beta <= alpha)
+                            break;
+                    }
+                }
+            }
+
+            return new int[]{minEval, pileIndex, bestMove};
+        }
+    }
+
+    public static int evaluate(int[] piles)
+    {
+        int value = 0;
+        for (int pile : piles)
+            value ^= pile;
+
+        return value;
     }
 
     private void flipPlayers()
     {
         selectedPile = -1;
-        countDown = getTime();
+        countDown = time;
         playerTurn = !playerTurn;
         gamePane.setDisable(!playerTurn);
         playerTimeContainer.setWidth(timerContainerWidth);
     }
 
-    private boolean isGameOver(int []piles)
+    private boolean isGameOver()
     {
         for(int pile : piles)
             if (pile > 0)
@@ -147,7 +282,7 @@ public class GameController implements Initializable
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Game Over");
         alert.setHeaderText(null);
-        alert.setContentText(playerTurn ? getPlayerName() + " Wins The Game!" : "Computer Wins The Game!");
+        alert.setContentText(playerTurn ? playerName + " Wins The Game!" : "Computer Wins The Game!");
         alert.show();
     }
 
@@ -200,7 +335,7 @@ public class GameController implements Initializable
 
     private void initGameGrid(GridPane gameGrid)
     {
-        int nimLevels = (int) Math.ceil(Math.sqrt(getNim()));
+        int nimLevels = (int) Math.ceil(Math.sqrt(nim));
         int maximumColumn = (nimLevels * 2) - 1;
 
         piles = new int[nimLevels];
@@ -249,10 +384,16 @@ public class GameController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle)
     {
+        playerName = getPlayerName();
+        depth = getLevel().getDepth();
+
+        time = getTime();
+        nim = getNim();
+
         countDown = 0;
         selectedPile = -1;
 
-        playerName.setText(getPlayerName());
+        playerNameLabel.setText(playerName);
         playerTurn = new Random().nextBoolean();
 
         GridPane gameGrid = createGraphicalGameGrid();
