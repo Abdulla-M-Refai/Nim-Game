@@ -56,8 +56,6 @@ public class MainMenuController implements Initializable
 
     private boolean mute;
 
-    private String playerName;
-
     private GameType type;
 
     private GameLevel gameLevel;
@@ -141,7 +139,6 @@ public class MainMenuController implements Initializable
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle)
     {
-        playerName = getPlayerName();
         mute = getMute();
 
         type = getType();
@@ -150,7 +147,7 @@ public class MainMenuController implements Initializable
         time = getTime();
         nim = getNim();
 
-        nameField.setText(playerName);
+        nameField.setText(getPlayerName());
 
         gameType.getItems()
             .addAll(

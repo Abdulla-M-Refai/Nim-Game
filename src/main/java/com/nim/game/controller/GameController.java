@@ -154,7 +154,7 @@ public class GameController implements Initializable
         }
     }
 
-    public Move findBestMove(int[] piles, int depth, int alpha, int beta, boolean isComputer)
+    private Move findBestMove(int[] piles, int depth, int alpha, int beta, boolean isComputer)
     {
         Move bestMove = new Move(-1, -1);
         int bestRate = !isComputer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
@@ -191,10 +191,10 @@ public class GameController implements Initializable
         return bestMove;
     }
 
-    public int minimax(int[] piles, int depth, int alpha, int beta, boolean isComputer)
+    private int minimax(int[] piles, int depth, int alpha, int beta, boolean isComputer)
     {
         if (depth == 0 || isGameOver(piles))
-            return !isComputer ? 1 : -1;
+            return !isComputer ? evaluate(piles) : -1;
 
         int bestRate = !isComputer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
@@ -224,6 +224,15 @@ public class GameController implements Initializable
         }
 
         return bestRate;
+    }
+
+    private int evaluate(int[] piles)
+    {
+        int value = 0;
+        for (int pile : piles)
+            value ^= pile;
+
+        return value;
     }
 
     private void flipPlayers()
@@ -284,7 +293,7 @@ public class GameController implements Initializable
         loadView("view/main-menu.fxml", (Stage)anchorPane.getScene().getWindow(), anchorPane);
     }
 
-    public void stopGame()
+    private void stopGame()
     {
         if (timeline != null)
         {
