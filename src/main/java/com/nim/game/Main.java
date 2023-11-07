@@ -1,5 +1,6 @@
 package com.nim.game;
 
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.application.Application;
 
@@ -16,9 +17,7 @@ public class Main extends Application
     public void start(Stage stage)
     {
         AnchorPane root = new AnchorPane();
-        root.setOpacity(0);
-
-        loadView("view/main-menu.fxml", stage, root);
+        stage.setScene(new Scene(root));
 
         stage.setWidth(800);
         stage.setHeight(600);
@@ -35,6 +34,8 @@ public class Main extends Application
 
         stage.setTitle("Nim Game");
         stage.show();
+
+        loadView("view/main-menu.fxml", stage, root);
     }
 
     public static void main(String[] args)

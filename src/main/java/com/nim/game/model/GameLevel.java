@@ -2,8 +2,8 @@ package com.nim.game.model;
 
 public enum GameLevel
 {
-    EASY(1),
-    MEDIUM(4),
+    EASY(3),
+    MEDIUM(5),
     HARD(7);
 
     private final int depth;

@@ -41,10 +41,8 @@ public class Helper
             try
             {
                 AnchorPane root = FXMLLoader.load(getResource(url));
-                Scene scene = new Scene(root);
-
+                stage.getScene().setRoot(root);
                 root.setOpacity(0);
-                stage.setScene(scene);
 
                 fadeTransition.setNode(root);
                 fadeTransition.setDuration(Duration.millis(1000));

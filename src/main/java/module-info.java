@@ -15,5 +15,6 @@ module com.nim.game.nim_game {
     exports com.nim.game;
     exports com.nim.game.controller;
     exports com.nim.game.listener;
+    exports com.nim.game.model;
     opens com.nim.game.controller to javafx.fxml;
 }

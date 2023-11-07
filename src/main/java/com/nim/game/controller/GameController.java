@@ -30,10 +30,13 @@ import javafx.geometry.Pos;
 import javafx.util.Duration;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.ResourceBundle;
 
 import java.io.IOException;
+
+import com.nim.game.model.Move;
 
 import static com.nim.game.util.Helper.*;
 import static com.nim.game.util.GameSettings.*;
@@ -89,35 +92,28 @@ public class GameController implements Initializable
         timeline = new Timeline(new KeyFrame(Duration.seconds(1), ev ->
         {
             if(playerTurn)
-            {
-                if(countDown > 0)
-                {
-                    countDown--;
-                    playerTimeContainer.setWidth((countDown * timerContainerWidth) / time);
-                }
-                else
-                {
-                    System.out.println("sss");
-                    ensurePlayerMovement();
-                    flipPlayers();
-                }
-            }
+                playerTurn();
             else
-            {
                 computerMove();
-                flipPlayers();
-            }
 
-            if(isGameOver())
-            {
-                stopGame();
-                showGameResult();
-                leaveGame();
-            }
+            if(isGameOver(piles))
+                gameOver();
+            else if(!playerTurn || countDown == 0)
+                flipPlayers();
         }));
 
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
+    }
+
+    private void playerTurn()
+    {
+        countDown = Math.max(--countDown, 0);
+
+        if(countDown > 0)
+            playerTimeContainer.setWidth((countDown * timerContainerWidth) / time);
+        else
+            ensurePlayerMovement();
     }
 
     private void ensurePlayerMovement()
@@ -142,121 +138,92 @@ public class GameController implements Initializable
 
     private void computerMove()
     {
-        int[] result = alphaBeta(piles, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
-        int pileIndex = result[1];
-        int nimCountToRemove = result[2];
+        Move move = findBestMove(piles, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
 
-         int index = 0;
-         int count = 0;
-
-         for(int i = 0 ; i < piles.length ; i++)
-         {
-             if(piles[i] > 0)
-             {
-                count++;
-                index = i;
-             }
-         }
-
-        if(count == 1 && nimCountToRemove == piles[index] && nimCountToRemove != 1)
-            nimCountToRemove--;
+        int row = move.getRow();
+        int nimCountToRemove = move.getNimCountToRemove();
 
         for(int j = 0 ; j < nimCountToRemove ; j++)
         {
             int column = 0;
             for(Node node : gameGrid.getChildren())
-                if(node instanceof AnchorPane && GridPane.getRowIndex(node) == pileIndex)
+                if(node instanceof AnchorPane && GridPane.getRowIndex(node) == row)
                     column = GridPane.getColumnIndex(node);
 
-            chooseNim(pileIndex, column);
+            chooseNim(row, column);
         }
     }
 
-    public static int[] alphaBeta(int[] piles, int depth, int alpha, int beta, boolean isMax)
+    public Move findBestMove(int[] piles, int depth, int alpha, int beta, boolean isComputer)
     {
-        if (depth == 0)
-        {
-            int value = evaluate(piles);
-            return new int[]{value, -1};
-        }
+        Move bestMove = new Move(-1, -1);
+        int bestRate = !isComputer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
-        if (isMax)
+        for (int i = 0; i < piles.length; i++)
         {
-            int maxEval = Integer.MIN_VALUE;
-            int pileIndex = -1;
-            int bestMove = -1;
-
-            for (int i = 0; i < piles.length; i++)
+            for (int j = 1; j <= piles[i]; j++)
             {
-                for (int j = 1; j <= piles[i]; j++)
+                int[] newPiles = Arrays.copyOf(piles, piles.length);
+                newPiles[i] -= j;
+
+                int rate = minimax(newPiles, depth - 1, alpha, beta, !isComputer);
+
+                if (!isComputer && rate > bestRate)
                 {
-                    if (piles[i] - j >= 0)
-                    {
-                        piles[i] -= j;
-                        int[] evalResult = alphaBeta(piles, depth - 1, alpha, beta, false);
-                        int eval = evalResult[0];
+                    bestRate = rate;
+                    bestMove = new Move(i, j);
+                    alpha = Math.max(alpha, rate);
+                }
+                else if (isComputer && rate < bestRate)
+                {
+                    bestRate = rate;
+                    bestMove = new Move(i, j);
+                    beta = Math.min(beta, rate);
+                }
 
-                        if (eval > maxEval)
-                        {
-                            maxEval = eval;
-                            pileIndex = i;
-                            bestMove = j;
-                        }
-
-                        alpha = Math.max(alpha, eval);
-                        piles[i] += j;
-
-                        if (beta <= alpha)
-                            break;
-                    }
+                if (alpha >= beta)
+                {
+                    break;
                 }
             }
-
-            return new int[]{maxEval, pileIndex, bestMove};
         }
-        else
-        {
-            int minEval = Integer.MAX_VALUE;
-            int pileIndex = -1;
-            int bestMove = -1;
 
-            for (int i = 0; i < piles.length; i++)
-            {
-                for (int j = 1; j <= piles[i]; j++)
-                {
-                    if (piles[i] - j >= 0)
-                    {
-                        piles[i] -= j;
-                        int[] evalResult = alphaBeta(piles, depth - 1, alpha, beta, true);
-                        int eval = evalResult[0];
-
-                        if (eval < minEval)
-                        {
-                            minEval = eval;
-                            pileIndex = i;
-                            bestMove = j;
-                        }
-
-                        beta = Math.min(beta, eval);
-                        piles[i] += j;
-
-                        if (beta <= alpha)
-                            break;
-                    }
-                }
-            }
-
-            return new int[]{minEval, pileIndex, bestMove};
-        }
+        return bestMove;
     }
 
-    public static int evaluate(int[] piles)
+    public int minimax(int[] piles, int depth, int alpha, int beta, boolean isComputer)
     {
-        int value = 0;
-        for (int pile : piles)
-            value ^= pile;
+        if (depth == 0 || isGameOver(piles))
+            return !isComputer ? 1 : -1;
 
-        return value;
+        int bestRate = !isComputer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+
+        for (int i = 0 ; i < piles.length ; i++)
+        {
+            for (int j = 1 ; j <= piles[i] ; j++)
+            {
+                int[] newPiles = Arrays.copyOf(piles, piles.length);
+                newPiles[i] -= j;
+
+                int rate = minimax(newPiles, depth - 1, alpha, beta, !isComputer);
+
+                if (!isComputer)
+                {
+                    bestRate = Math.max(bestRate, rate);
+                    alpha = Math.max(alpha, rate);
+                }
+                else
+                {
+                    bestRate = Math.min(bestRate, rate);
+                    beta = Math.min(beta, rate);
+                }
+
+                if (alpha >= beta)
+                    break;
+            }
+        }
+
+        return bestRate;
     }
 
     private void flipPlayers()
@@ -268,7 +235,7 @@ public class GameController implements Initializable
         playerTimeContainer.setWidth(timerContainerWidth);
     }
 
-    private boolean isGameOver()
+    private boolean isGameOver(int[] piles)
     {
         for(int pile : piles)
             if (pile > 0)
@@ -277,12 +244,20 @@ public class GameController implements Initializable
         return true;
     }
 
+    private void gameOver()
+    {
+        stopGame();
+        showGameResult();
+        leaveGame();
+    }
+
     private void showGameResult()
     {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Game Over");
         alert.setHeaderText(null);
-        alert.setContentText(playerTurn ? playerName + " Wins The Game!" : "Computer Wins The Game!");
+        alert.initOwner(anchorPane.getScene().getWindow());
+        alert.setContentText(!playerTurn ? playerName + " Wins The Game!" : "Computer Wins The Game!");
         alert.show();
     }
 
