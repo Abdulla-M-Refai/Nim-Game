@@ -2,7 +2,7 @@ package com.nim.game.model;
 
 public enum GameLevel
 {
-    EASY(3),
+    EASY(2),
     MEDIUM(5),
     HARD(7);
 
