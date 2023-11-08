@@ -18,7 +18,7 @@ public class GameSettings
 
     private static final int maxNim = 49;
 
-    private static final int minNim = 16;
+    private static final int minNim = 10;
 
     private static String playerName = "Player One";
 

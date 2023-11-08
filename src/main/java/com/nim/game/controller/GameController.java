@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.application.Platform;
 
+import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
 import javafx.scene.Node;
@@ -321,44 +322,56 @@ public class GameController implements Initializable
     {
         int nimLevels = (int) Math.ceil(Math.sqrt(nim));
         int maximumColumn = (nimLevels * 2) - 1;
-
         piles = new int[nimLevels];
 
-        for(int i = 0 ; i < nimLevels ; i++)
+        int index = 0;
+        int nimCount = nim;
+        int currentCount = 1;
+
+        while (nimCount > 0)
         {
-            for(int j = 0 ; j < maximumColumn ; j++)
-            {
-                gameGrid.add(new Pane(), j, i);
-            }
+            if (nimCount < currentCount)
+                currentCount = nimCount;
+
+            piles[index] = currentCount;
+            nimCount -= currentCount;
+            currentCount += 2;
+            index++;
         }
 
         NimClickListener nimClickListener = this::chooseNim;
 
         for(int i = 0 ; i < nimLevels ; i++)
         {
-            int start = (maximumColumn / 2) - i;
-            int end = ((i + 1) * 2) + (start - 1);
+            int difference = maximumColumn - piles[i];
+            int start = difference / 2 - 1;
+            int end = start + piles[i] + 1;
 
-            for(int j = start ; j < end ; j++)
+            for (int j = 0 ; j < maximumColumn ; j++)
             {
-                try
+                if(j > start && j < end)
                 {
-                    FXMLLoader fxmlLoader = new FXMLLoader();
-                    fxmlLoader.setLocation(getResource("view/nim.fxml"));
-                    AnchorPane nim = fxmlLoader.load();
+                    try
+                    {
+                        FXMLLoader fxmlLoader = new FXMLLoader();
+                        fxmlLoader.setLocation(getResource("view/nim.fxml"));
+                        AnchorPane nim = fxmlLoader.load();
 
-                    NimController nimController = fxmlLoader.getController();
-                    nimController.setData(i, j, nimClickListener);
+                        NimController nimController = fxmlLoader.getController();
+                        nimController.setData(i, j, nimClickListener);
 
-                    gameGrid.add(nim, j, i);
+                        gameGrid.add(nim, j, i);
+                    }
+                    catch (IOException exception)
+                    {
+                        System.out.println(exception.getMessage());
+                    }
                 }
-                catch (IOException e)
+                else
                 {
-                    System.out.println(e.getMessage());
+                    gameGrid.add(new Pane(), j, i);
                 }
             }
-
-            piles[i] = ((i + 1) * 2) - 1;
         }
 
         gamePane.getChildren().add(gameGrid);

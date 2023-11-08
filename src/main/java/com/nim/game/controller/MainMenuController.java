@@ -73,14 +73,14 @@ public class MainMenuController implements Initializable
     @FXML
     void incNim()
     {
-        nim = nim >= getMaxNim() ? getMaxNim() : nim + ((int) Math.ceil(Math.sqrt(nim)) * 2) + 1;
+        nim = nim >= getMaxNim() ? getMaxNim() : nim + 1;
         nimField.setText(String.valueOf(nim));
     }
 
     @FXML
     void decNim()
     {
-        nim = nim <= getMinNim() ? getMinNim() : nim - ((int) Math.ceil(Math.sqrt(nim)) * 2) + 1;
+        nim = nim <= getMinNim() ? getMinNim() : nim - 1;
         nimField.setText(String.valueOf(nim));
     }
 
