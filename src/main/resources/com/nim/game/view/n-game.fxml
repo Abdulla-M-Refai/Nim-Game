@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="anchorPane" onMouseClicked="#onAnchorClick" prefHeight="400.0" prefWidth="600.0" styleClass="main-container" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nim.game.controller.NGameController">
+    <children>
+        <Button focusTraversable="false" layoutX="25.0" layoutY="34.0" mnemonicParsing="false" onAction="#leaveGame" styleClass="shiny-orange" text="Leave" />
+        <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="55.0" layoutX="479.0" layoutY="21.0" stroke="BLACK" strokeType="INSIDE" styleClass="time-container" width="140.0" />
+        <Label layoutX="479.0" layoutY="33.0" prefHeight="30.0" prefWidth="140.0" style="-fx-alignment: center;" text="Computer" textAlignment="CENTER">
+            <font>
+                <Font name="System Bold" size="20.0" />
+            </font>
+        </Label>
+        <Rectangle fx:id="playerTimeContainer" arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="55.0" layoutX="182.0" layoutY="21.0" stroke="BLACK" strokeType="INSIDE" styleClass="time-container" width="140.0" />
+        <Label fx:id="playerNameLabel" layoutX="182.0" layoutY="33.0" prefHeight="30.0" prefWidth="140.0" style="-fx-alignment: center;" text="Name" textAlignment="CENTER">
+            <font>
+                <Font name="System Bold" size="20.0" />
+            </font>
+        </Label>
+        <StackPane fx:id="gamePane" layoutX="24.0" layoutY="78.0" minHeight="492.0" prefHeight="492.0" prefWidth="200.0" styleClass="game-pane" />
+    </children>
+   <stylesheets>
+      <URL value="@../assets/css/common.css" />
+      <URL value="@../assets/css/n-game.css" />
+   </stylesheets>
+</AnchorPane>

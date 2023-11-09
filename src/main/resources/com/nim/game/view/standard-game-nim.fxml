@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.shape.Rectangle?>
 
-<AnchorPane maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" onMouseClicked="#onClick" prefHeight="50.0" prefWidth="50.0" styleClass="nim-container" stylesheets="@../assets/css/common.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nim.game.controller.NimController">
+<AnchorPane maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" onMouseClicked="#onClick" prefHeight="50.0" prefWidth="50.0" styleClass="nim-container" stylesheets="@../assets/css/standard-game.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nim.game.controller.NimController">
    <children>
       <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="50.0" stroke="BLACK" strokeType="INSIDE" styleClass="nim-card" width="50.0" />
       <ImageView fitHeight="40.0" fitWidth="40.0" layoutX="5.0" layoutY="5.0" pickOnBounds="true" preserveRatio="true">

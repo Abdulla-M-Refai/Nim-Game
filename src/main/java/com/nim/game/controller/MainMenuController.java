@@ -120,7 +120,7 @@ public class MainMenuController implements Initializable
         setType(type);
         setLevel(gameLevel);
 
-        loadView("view/game.fxml", (Stage)anchorPane.getScene().getWindow(), anchorPane);
+        loadView(type.getType(), (Stage)anchorPane.getScene().getWindow(), anchorPane);
     }
 
     @FXML

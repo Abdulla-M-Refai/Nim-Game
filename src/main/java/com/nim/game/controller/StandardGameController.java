@@ -5,7 +5,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.application.Platform;
 
-import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
 import javafx.scene.Node;
@@ -44,7 +43,7 @@ import static com.nim.game.util.GameSettings.*;
 
 import com.nim.game.listener.NimClickListener;
 
-public class GameController implements Initializable
+public class StandardGameController implements Initializable
 {
     @FXML
     private AnchorPane anchorPane;
@@ -303,12 +302,12 @@ public class GameController implements Initializable
         }
     }
 
-    private GridPane createGraphicalGameGrid()
+    private GridPane createGraphicalGameGrid(double width, double height)
     {
         gameGrid = new GridPane();
 
-        gameGrid.setMinWidth(750);
-        gameGrid.setMinHeight(500);
+        gameGrid.setMinWidth(width);
+        gameGrid.setMinHeight(height);
 
         gameGrid.setVgap(5);
         gameGrid.setHgap(5);
@@ -354,7 +353,7 @@ public class GameController implements Initializable
                     try
                     {
                         FXMLLoader fxmlLoader = new FXMLLoader();
-                        fxmlLoader.setLocation(getResource("view/nim.fxml"));
+                        fxmlLoader.setLocation(getResource("view/standard-game-nim.fxml"));
                         AnchorPane nim = fxmlLoader.load();
 
                         NimController nimController = fxmlLoader.getController();
@@ -390,16 +389,16 @@ public class GameController implements Initializable
         countDown = 0;
         selectedPile = -1;
 
-        playerNameLabel.setText(playerName);
-        playerTurn = new Random().nextBoolean();
-
-        GridPane gameGrid = createGraphicalGameGrid();
-        initGameGrid(gameGrid);
-        startGame();
-
         Platform.runLater(() -> {
+            playerNameLabel.setText(playerName);
+            playerTurn = new Random().nextBoolean();
+
             gamePane.setDisable(!playerTurn);
             timerContainerWidth = playerTimeContainer.getWidth();
+
+            GridPane gameGrid = createGraphicalGameGrid(gamePane.getWidth(), gamePane.getHeight());
+            initGameGrid(gameGrid);
+            startGame();
 
             Stage stage = (Stage) anchorPane.getScene().getWindow();
             stage.setOnCloseRequest(event -> stopGame());

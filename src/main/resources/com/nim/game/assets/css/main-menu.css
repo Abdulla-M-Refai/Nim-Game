@@ -1,0 +1,22 @@
+
+.game-settings-pane
+{
+    -fx-min-width: 300px;
+    -fx-min-height: 300px;
+
+    -fx-max-width: 300px;
+    -fx-max-height: 300px;
+
+    -fx-pref-width: 300px;
+    -fx-pref-height: 300px;
+}
+
+.game-settings-rectangle
+{
+    -fx-arc-height: 20;
+    -fx-arc-width: 20;
+    -fx-stroke: none;
+
+    -fx-fill: #FFFFFF;
+    -fx-opacity: 0.7;
+}

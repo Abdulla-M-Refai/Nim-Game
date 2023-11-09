@@ -1,0 +1,37 @@
+
+.game-pane
+{
+    -fx-min-width: 750px;
+    -fx-min-height: 520px;
+
+    -fx-max-width: 750px;
+    -fx-max-height: 520px;
+
+    -fx-pref-width: 750px;
+    -fx-pref-height: 520px;
+}
+
+.nim-container
+{
+    -fx-min-width: 70px;
+    -fx-min-height: 70px;
+
+    -fx-max-width: 70px;
+    -fx-max-height: 70px;
+
+    -fx-pref-width: 70px;
+    -fx-pref-height: 70px;
+
+    -fx-cursor: hand;
+    -fx-background-color: transparent;
+}
+
+.nim-card
+{
+    -fx-arc-height: 15;
+    -fx-arc-width: 15;
+    -fx-stroke: none;
+
+    -fx-fill: DODGERBLUE;
+    -fx-opacity: 0.8;
+}
