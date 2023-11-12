@@ -2,19 +2,19 @@ package com.nim.game.model;
 
 public class Move
 {
-    private final int row;
+    private final int index;
 
     private final int nimCountToRemove;
 
-    public Move(int row, int nimCountToRemove)
+    public Move(int index, int nimCountToRemove)
     {
-        this.row = row;
+        this.index = index;
         this.nimCountToRemove = nimCountToRemove;
     }
 
-    public int getRow()
+    public int getIndex()
     {
-        return row;
+        return index;
     }
 
     public int getNimCountToRemove()

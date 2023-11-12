@@ -140,7 +140,7 @@ public class StandardGameController implements Initializable
     {
         Move move = findBestMove(piles, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
 
-        int row = move.getRow();
+        int row = move.getIndex();
         int nimCountToRemove = move.getNimCountToRemove();
 
         for(int i = 0 ; i < nimCountToRemove ; i++)
@@ -159,29 +159,29 @@ public class StandardGameController implements Initializable
         Move bestMove = new Move(-1, -1);
         int bestRate = !isComputer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
-        for (int i = 0; i < piles.length; i++)
+        for(int i = 0; i < piles.length; i++)
         {
-            for (int j = 1; j <= piles[i]; j++)
+            for(int j = 1; j <= piles[i]; j++)
             {
                 int[] newPiles = Arrays.copyOf(piles, piles.length);
                 newPiles[i] -= j;
 
                 int rate = minimax(newPiles, depth - 1, alpha, beta, !isComputer);
 
-                if (!isComputer && rate > bestRate)
+                if(!isComputer && rate > bestRate)
                 {
                     bestRate = rate;
                     bestMove = new Move(i, j);
                     alpha = Math.max(alpha, rate);
                 }
-                else if (isComputer && rate < bestRate)
+                else if(isComputer && rate < bestRate)
                 {
                     bestRate = rate;
                     bestMove = new Move(i, j);
                     beta = Math.min(beta, rate);
                 }
 
-                if (alpha >= beta)
+                if(alpha >= beta)
                 {
                     break;
                 }
@@ -193,21 +193,21 @@ public class StandardGameController implements Initializable
 
     private int minimax(int[] piles, int depth, int alpha, int beta, boolean isComputer)
     {
-        if (depth == 0 || isGameOver(piles))
+        if(depth == 0 || isGameOver(piles))
             return !isComputer ? evaluate(piles) : -1;
 
         int bestRate = !isComputer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
-        for (int i = 0 ; i < piles.length ; i++)
+        for(int i = 0 ; i < piles.length ; i++)
         {
-            for (int j = 1 ; j <= piles[i] ; j++)
+            for(int j = 1 ; j <= piles[i] ; j++)
             {
                 int[] newPiles = Arrays.copyOf(piles, piles.length);
                 newPiles[i] -= j;
 
                 int rate = minimax(newPiles, depth - 1, alpha, beta, !isComputer);
 
-                if (!isComputer)
+                if(!isComputer)
                 {
                     bestRate = Math.max(bestRate, rate);
                     alpha = Math.max(alpha, rate);
@@ -218,7 +218,7 @@ public class StandardGameController implements Initializable
                     beta = Math.min(beta, rate);
                 }
 
-                if (alpha >= beta)
+                if(alpha >= beta)
                     break;
             }
         }
@@ -229,7 +229,7 @@ public class StandardGameController implements Initializable
     private int evaluate(int[] piles)
     {
         int value = 0;
-        for (int pile : piles)
+        for(int pile : piles)
             value ^= pile;
 
         return value;

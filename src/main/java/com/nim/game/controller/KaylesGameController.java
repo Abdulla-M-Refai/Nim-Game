@@ -1,12 +1,10 @@
 package com.nim.game.controller;
 
-import com.nim.game.model.Move;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.application.Platform;
 
-import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 import javafx.scene.Node;
@@ -14,6 +12,7 @@ import javafx.scene.Node;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.AnchorPane;
@@ -30,10 +29,12 @@ import javafx.animation.Animation;
 import javafx.geometry.Pos;
 import javafx.util.Duration;
 
-import java.net.URL;
 import java.util.*;
+import java.net.URL;
 
 import java.io.IOException;
+
+import com.nim.game.model.Move;
 
 import static com.nim.game.util.Helper.*;
 import static com.nim.game.util.GameSettings.*;
@@ -136,174 +137,121 @@ public class KaylesGameController implements Initializable
 
     private void computerMove()
     {
-        int []groupedNimsArray = sumAdjacentOnes(nims);
-        int []dividedNimsArray = divideArray(groupedNimsArray);
-        Move move = findBestMove(dividedNimsArray, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
+        Move move = findBestMove(nims, depth, Integer.MIN_VALUE, Integer.MAX_VALUE, true);
 
-        int row = move.getRow();
+        int index = move.getIndex();
         int nimCountToRemove = move.getNimCountToRemove();
-
-        dividedNimsArray[row] -= nimCountToRemove;
-        int []newNimsArray = generateNewNimsArray(dividedNimsArray);
-
-        List<Integer> indices = new ArrayList<>();
-        for(int i = 0 ; i < nims.length ; i++)
-            if(nims[i] != newNimsArray[i])
-                indices.add(i);
 
         for(int i = 0 ; i < nimCountToRemove ; i++)
         {
             for(Node node : gameGrid.getChildren())
             {
-                if(node instanceof AnchorPane)
-                {
-                    int index = GridPane.getRowIndex(node) * 9 + GridPane.getColumnIndex(node);
+                int nodeRow = GridPane.getRowIndex(node);
+                int nodeColumn = GridPane.getColumnIndex(node);
+                int nodeIndex = nodeRow * 9 + nodeColumn;
 
-                    if(indices.contains(index))
-                    {
-                        chooseNim(GridPane.getRowIndex(node), GridPane.getColumnIndex(node));
-                        break;
-                    }
+                if(node instanceof AnchorPane && index == nodeIndex)
+                {
+                    index++;
+                    chooseNim(nodeRow, nodeColumn);
+                    break;
                 }
             }
         }
     }
 
-    private int[] sumAdjacentOnes(int[] nims)
-    {
-        int index = 0;
-        int[] newNimsArray = new int[nims.length];
-
-        for (int i = 0; i < nims.length; i++)
-        {
-            if(nims[i] == 0)
-                newNimsArray[index++] = 0;
-
-            if(i > 0 && nims[i - 1] == 1)
-                continue;
-
-            if (nims[i] == 1)
-                newNimsArray[index++] = 1 + getAdjacentOnes(nims, i);
-        }
-
-        return Arrays.copyOfRange(newNimsArray, 0, index);
-    }
-
-    private int getAdjacentOnes(int[] nims, int index)
-    {
-        int count = 0;
-
-        for(int i = index - 1; i >= 0 && nims[i] == 1; i--)
-            count++;
-
-        for(int i = index + 1; i < nims.length && nims[i] == 1; i++)
-            count++;
-
-        return count;
-    }
-
-    private int[] divideArray(int[] nims)
-    {
-        List<Integer> dividedArray = new ArrayList<>();
-
-        for(int nimCount : nims)
-        {
-            if(nimCount > 3)
-            {
-                int remaining = nimCount;
-
-                while(remaining > 3)
-                {
-                    dividedArray.add(3);
-                    remaining -= 3;
-                }
-
-                if(remaining > 0)
-                    dividedArray.add(remaining);
-            }
-            else
-            {
-                dividedArray.add(nimCount);
-            }
-        }
-
-        return dividedArray.stream().mapToInt(Integer::intValue).toArray();
-    }
-
-    public int[] generateNewNimsArray(int[] divided)
-    {
-        int[] nimsArray = new int[nims.length];
-
-        int index = 0;
-        for (int nimsCount : divided)
-        {
-            if (nimsCount == 0)
-            {
-                nimsArray[index++] = 0;
-                continue;
-            }
-
-            for (int j = 0; j < nimsCount ; j++)
-                nimsArray[index++] = 1;
-        }
-
-        return nimsArray;
-    }
-
-    private Move findBestMove(int[] piles, int depth, int alpha, int beta, boolean isComputer)
+    private Move findBestMove(int[] nims, int depth, int alpha, int beta, boolean isComputer)
     {
         Move bestMove = new Move(-1, -1);
         int bestRate = !isComputer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
-        for (int i = 0; i < piles.length; i++)
+        for(int i = 0; i < nims.length; i++)
         {
-            for (int j = 1; j <= piles[i]; j++)
+            if (nims[i] == 1)
             {
-                int[] newPiles = Arrays.copyOf(piles, piles.length);
-                newPiles[i] -= j;
+                int[] newNims = Arrays.copyOf(nims, nims.length);
+                newNims[i] = 0;
 
-                int rate = minimax(newPiles, depth - 1, alpha, beta, !isComputer);
+                int rate = minimax(newNims, depth - 1, alpha, beta, !isComputer);
 
-                if (!isComputer && rate > bestRate)
+                if(!isComputer)
                 {
-                    bestRate = rate;
-                    bestMove = new Move(i, j);
+                    if (rate > bestRate)
+                    {
+                        bestRate = rate;
+                        bestMove = new Move(i, 1);
+                    }
                     alpha = Math.max(alpha, rate);
                 }
-                else if (isComputer && rate < bestRate)
+                else
                 {
-                    bestRate = rate;
-                    bestMove = new Move(i, j);
+                    if(rate < bestRate)
+                    {
+                        bestRate = rate;
+                        bestMove = new Move(i, 1);
+                    }
+
                     beta = Math.min(beta, rate);
                 }
 
                 if (alpha >= beta)
-                {
                     break;
+            }
+
+            if(i < nims.length - 1 && nims[i] == 1 && nims[i + 1] == 1)
+            {
+                int[] newNims = Arrays.copyOf(nims, nims.length);
+                newNims[i] = 0;
+                newNims[i + 1] = 0;
+
+                int rate = minimax(newNims, depth - 1, alpha, beta, !isComputer);
+
+                if(!isComputer)
+                {
+                    if(rate > bestRate)
+                    {
+                        bestRate = rate;
+                        bestMove = new Move(i, 2);
+                    }
+
+                    alpha = Math.max(alpha, rate);
                 }
+                else
+                {
+                    if(rate < bestRate)
+                    {
+                        bestRate = rate;
+                        bestMove = new Move(i, 2);
+                    }
+
+                    beta = Math.min(beta, rate);
+                }
+
+                if (alpha >= beta)
+                    break;
             }
         }
 
         return bestMove;
     }
 
-    private int minimax(int[] piles, int depth, int alpha, int beta, boolean isComputer)
+    private int minimax(int[] nims, int depth, int alpha, int beta, boolean isComputer)
     {
-        if (depth == 0 || isGameOver(piles))
-            return !isComputer ? evaluate(piles) : -1;
+        if(depth == 0 || isGameOver(nims))
+            return !isComputer ? evaluate(nims) : -1;
 
         int bestRate = !isComputer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
 
-        for (int i = 0 ; i < piles.length ; i++)
+        for(int i = 0 ; i < nims.length ; i++)
         {
-            for (int j = 1 ; j <= piles[i] ; j++)
+            if (nims[i] == 1)
             {
-                int[] newPiles = Arrays.copyOf(piles, piles.length);
-                newPiles[i] -= j;
+                int[] newNims = Arrays.copyOf(nims, nims.length);
+                newNims[i] = 0;
 
-                int rate = minimax(newPiles, depth - 1, alpha, beta, !isComputer);
+                int rate = minimax(newNims, depth - 1, alpha, beta, !isComputer);
 
-                if (!isComputer)
+                if(!isComputer)
                 {
                     bestRate = Math.max(bestRate, rate);
                     alpha = Math.max(alpha, rate);
@@ -314,7 +262,30 @@ public class KaylesGameController implements Initializable
                     beta = Math.min(beta, rate);
                 }
 
-                if (alpha >= beta)
+                if(alpha >= beta)
+                    break;
+            }
+
+            if (i < nims.length - 1 && nims[i] == 1 && nims[i + 1] == 1)
+            {
+                int[] newNims = Arrays.copyOf(nims, nims.length);
+                newNims[i] = 0;
+                newNims[i + 1] = 0;
+
+                int rate = minimax(newNims, depth - 1, alpha, beta, !isComputer);
+
+                if(!isComputer)
+                {
+                    bestRate = Math.max(bestRate, rate);
+                    alpha = Math.max(alpha, rate);
+                }
+                else
+                {
+                    bestRate = Math.min(bestRate, rate);
+                    beta = Math.min(beta, rate);
+                }
+
+                if(alpha >= beta)
                     break;
             }
         }
@@ -322,13 +293,13 @@ public class KaylesGameController implements Initializable
         return bestRate;
     }
 
-    private int evaluate(int[] piles)
+    public int evaluate(int[] nims)
     {
-        int value = 0;
-        for (int pile : piles)
-            value ^= pile;
+        int countOnes = 0;
+        for (int nim : nims)
+            countOnes += nim;
 
-        return value;
+        return countOnes % 2 == 0 ? 1 : -1;
     }
 
     private void flipPlayers()
@@ -340,7 +311,7 @@ public class KaylesGameController implements Initializable
         playerTimeContainer.setWidth(timerContainerWidth);
     }
 
-    private static boolean isGameOver(int[] nims)
+    private boolean isGameOver(int[] nims)
     {
         for (int nim : nims)
             if (nim == 1)
@@ -372,7 +343,7 @@ public class KaylesGameController implements Initializable
 
         if(selectedIndex == -1)
             selectedIndex = index;
-        else if(index != (selectedIndex + 1) && index != (selectedIndex + 2) && index != (selectedIndex - 1) && index != (selectedIndex - 2))
+        else if(index != (selectedIndex + 1) && index != (selectedIndex - 1))
             return;
 
         for(Node node : gameGrid.getChildren())
@@ -430,6 +401,12 @@ public class KaylesGameController implements Initializable
         int rowIndex = 0;
         int columnIndex = 0;
 
+        Random random = new Random();
+        List<Integer> randomIndices = new ArrayList<>();
+
+        for(int i = 0 ; i < ((nim % 2 == 0) ? 3 : 2) ; i++)
+            randomIndices.add(random.nextInt(nim));
+
         for(int i = 0 ; i < nim ; i++)
         {
             try
@@ -447,8 +424,21 @@ public class KaylesGameController implements Initializable
                 NimController nimController = fxmlLoader.getController();
                 nimController.setData(rowIndex, columnIndex, nNimClickListener);
 
-                nims[i] = 1;
-                gameGrid.add(nim, columnIndex++, rowIndex);
+                if(!randomIndices.contains(i))
+                {
+                    nims[i] = 1;
+                    gameGrid.add(nim, columnIndex++, rowIndex);
+                }
+                else
+                {
+                    Pane pane = new Pane();
+                    pane.setMinWidth(nim.getWidth());
+                    pane.setMinHeight(nim.getHeight());
+                    pane.setStyle("-fx-background-color: lightblue;");
+
+                    nims[i] = 0;
+                    gameGrid.add(pane, columnIndex++, rowIndex);
+                }
             }
             catch (IOException exception)
             {
