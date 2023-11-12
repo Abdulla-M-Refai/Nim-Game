@@ -80,7 +80,7 @@ public class KaylesGameController implements Initializable
     @FXML
     void onAnchorClick(MouseEvent event)
     {
-        if (event.getButton() == MouseButton.SECONDARY && playerTurn)
+        if(event.getButton() == MouseButton.SECONDARY && playerTurn)
             countDown = 0;
     }
 
@@ -432,8 +432,8 @@ public class KaylesGameController implements Initializable
                 else
                 {
                     Pane pane = new Pane();
-                    pane.setMinWidth(nim.getWidth());
-                    pane.setMinHeight(nim.getHeight());
+                    pane.setPrefWidth(nim.getPrefWidth());
+                    pane.setPrefHeight(nim.getPrefHeight());
                     pane.setStyle("-fx-background-color: lightblue;");
 
                     nims[i] = 0;
