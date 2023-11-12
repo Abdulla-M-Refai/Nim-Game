@@ -16,7 +16,7 @@ public class GameSettings
 
     private static final int minTime = 5;
 
-    private static final int maxNim = 49;
+    private static final int maxNim = 36;
 
     private static final int minNim = 10;
 

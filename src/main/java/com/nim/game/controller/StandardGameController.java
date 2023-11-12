@@ -143,7 +143,7 @@ public class StandardGameController implements Initializable
         int row = move.getRow();
         int nimCountToRemove = move.getNimCountToRemove();
 
-        for(int j = 0 ; j < nimCountToRemove ; j++)
+        for(int i = 0 ; i < nimCountToRemove ; i++)
         {
             int column = 0;
             for(Node node : gameGrid.getChildren())
@@ -281,6 +281,12 @@ public class StandardGameController implements Initializable
             {
                 piles[row]--;
                 gameGrid.getChildren().remove(node);
+
+                Pane pane = new Pane();
+                pane.setMinWidth(((AnchorPane) node).getWidth());
+                pane.setMinHeight(((AnchorPane) node).getMinHeight());
+
+                gameGrid.add(pane, column, row);
                 break;
             }
         }

@@ -3,7 +3,7 @@ package com.nim.game.model;
 public enum GameType
 {
     STANDARD("view/standard-game.fxml"),
-    THE_N_GAME("view/n-game.fxml");
+    KAYLES("view/kayles-game.fxml");
 
     private final String type;
 
