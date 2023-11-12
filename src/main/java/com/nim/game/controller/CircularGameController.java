@@ -41,7 +41,7 @@ import static com.nim.game.util.GameSettings.*;
 
 import com.nim.game.listener.NimClickListener;
 
-public class KaylesGameController implements Initializable
+public class CircularGameController implements Initializable
 {
     @FXML
     private AnchorPane anchorPane;
@@ -230,6 +230,40 @@ public class KaylesGameController implements Initializable
                 if (alpha >= beta)
                     break;
             }
+
+            if (i < nims.length - 2 && nims[i] == 1 && nims[i + 1] == 1 && nims[i + 2] == 1)
+            {
+                int[] newNims = Arrays.copyOf(nims, nims.length);
+                newNims[i] = 0;
+                newNims[i + 1] = 0;
+                newNims[i + 2] = 0;
+
+                int rate = minimax(newNims, depth - 1, alpha, beta, !isComputer);
+
+                if(!isComputer)
+                {
+                    if(rate > bestRate)
+                    {
+                        bestRate = rate;
+                        bestMove = new Move(i, 3);
+                    }
+
+                    alpha = Math.max(alpha, rate);
+                }
+                else
+                {
+                    if(rate < bestRate)
+                    {
+                        bestRate = rate;
+                        bestMove = new Move(i, 3);
+                    }
+
+                    beta = Math.min(beta, rate);
+                }
+
+                if (alpha >= beta)
+                    break;
+            }
         }
 
         return bestMove;
@@ -288,6 +322,30 @@ public class KaylesGameController implements Initializable
                 if(alpha >= beta)
                     break;
             }
+
+            if (i < nims.length - 2 && nims[i] == 1 && nims[i + 1] == 1 && nims[i + 2] == 1)
+            {
+                int[] newNims = Arrays.copyOf(nims, nims.length);
+                newNims[i] = 0;
+                newNims[i + 1] = 0;
+                newNims[i + 2] = 0;
+
+                int rate = minimax(newNims, depth - 1, alpha, beta, !isComputer);
+
+                if(!isComputer)
+                {
+                    bestRate = Math.max(bestRate, rate);
+                    alpha = Math.max(alpha, rate);
+                }
+                else
+                {
+                    bestRate = Math.min(bestRate, rate);
+                    beta = Math.min(beta, rate);
+                }
+
+                if(alpha >= beta)
+                    break;
+            }
         }
 
         return bestRate;
@@ -299,7 +357,7 @@ public class KaylesGameController implements Initializable
         for (int nim : nims)
             countOnes += nim;
 
-        return countOnes % 2 == 0 ? 1 : -1;
+        return countOnes % 3 == 0 ? 1 : -1;
     }
 
     private void flipPlayers()
@@ -343,7 +401,7 @@ public class KaylesGameController implements Initializable
 
         if(selectedIndex == -1)
             selectedIndex = index;
-        else if(index != (selectedIndex + 1) && index != (selectedIndex - 1))
+        else if(index != (selectedIndex + 1) && index != (selectedIndex - 1) && index != (selectedIndex + 2) && index != (selectedIndex - 2))
             return;
 
         for(Node node : gameGrid.getChildren())
@@ -401,18 +459,12 @@ public class KaylesGameController implements Initializable
         int rowIndex = 0;
         int columnIndex = 0;
 
-        Random random = new Random();
-        List<Integer> randomIndices = new ArrayList<>();
-
-        for(int i = 0 ; i < ((nim % 2 == 0) ? 3 : 2) ; i++)
-            randomIndices.add(random.nextInt(nim));
-
         for(int i = 0 ; i < nim ; i++)
         {
             try
             {
                 FXMLLoader fxmlLoader = new FXMLLoader();
-                fxmlLoader.setLocation(getResource("view/kayles-game-nim.fxml"));
+                fxmlLoader.setLocation(getResource("view/circular-game-nim.fxml"));
                 AnchorPane nim = fxmlLoader.load();
 
                 if(columnIndex == 9)
@@ -424,21 +476,8 @@ public class KaylesGameController implements Initializable
                 NimController nimController = fxmlLoader.getController();
                 nimController.setData(rowIndex, columnIndex, nNimClickListener);
 
-                if(!randomIndices.contains(i))
-                {
-                    nims[i] = 1;
-                    gameGrid.add(nim, columnIndex++, rowIndex);
-                }
-                else
-                {
-                    Pane pane = new Pane();
-                    pane.setPrefWidth(nim.getPrefWidth());
-                    pane.setPrefHeight(nim.getPrefHeight());
-                    pane.setStyle("-fx-background-color: lightblue;");
-
-                    nims[i] = 0;
-                    gameGrid.add(pane, columnIndex++, rowIndex);
-                }
+                nims[i] = 1;
+                gameGrid.add(nim, columnIndex++, rowIndex);
             }
             catch (IOException exception)
             {
