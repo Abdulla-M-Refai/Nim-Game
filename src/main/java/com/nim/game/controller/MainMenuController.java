@@ -50,6 +50,15 @@ public class MainMenuController implements Initializable
     private RadioButton hard;
 
     @FXML
+    private ToggleGroup start;
+
+    @FXML
+    private RadioButton computer;
+
+    @FXML
+    private RadioButton human;
+
+    @FXML
     private Button toggleMuteButton;
 
     private ImageView toggleMuteButtonView;
@@ -59,6 +68,8 @@ public class MainMenuController implements Initializable
     private GameType type;
 
     private GameLevel gameLevel;
+
+    private boolean isComputerStarting;
 
     private int time;
 
@@ -110,6 +121,15 @@ public class MainMenuController implements Initializable
     }
 
     @FXML
+    void setStartingPlayer()
+    {
+        if(start.getSelectedToggle().equals(computer))
+            isComputerStarting = true;
+        else if(start.getSelectedToggle().equals(human))
+            isComputerStarting = false;
+    }
+
+    @FXML
     void play() throws Exception
     {
         if(!nameField.getText().isBlank())
@@ -119,6 +139,7 @@ public class MainMenuController implements Initializable
         setTime(time);
         setType(type);
         setLevel(gameLevel);
+        setIsComputerStarting(isComputerStarting);
 
         loadView(type.getType(), (Stage)anchorPane.getScene().getWindow(), anchorPane);
     }
@@ -147,6 +168,8 @@ public class MainMenuController implements Initializable
         time = getTime();
         nim = getNim();
 
+        isComputerStarting = isComputerStarting();
+
         nameField.setText(getPlayerName());
 
         gameType.getItems()
@@ -167,6 +190,11 @@ public class MainMenuController implements Initializable
             level.selectToggle(medium);
         else if(gameLevel == GameLevel.HARD)
             level.selectToggle(hard);
+
+        if(isComputerStarting)
+            start.selectToggle(computer);
+        else
+            start.selectToggle(human);
 
         String speakerImg = getMute() ?
             String.valueOf(getResource("assets/image/speaker.png")) :

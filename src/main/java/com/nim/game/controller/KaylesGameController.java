@@ -35,13 +35,14 @@ import java.net.URL;
 import java.io.IOException;
 
 import com.nim.game.model.Move;
+import com.nim.game.model.GameLevel;
 
 import static com.nim.game.util.Helper.*;
 import static com.nim.game.util.GameSettings.*;
 
 import com.nim.game.listener.NimClickListener;
 
-public class CircularGameController implements Initializable
+public class KaylesGameController implements Initializable
 {
     @FXML
     private AnchorPane anchorPane;
@@ -75,6 +76,8 @@ public class CircularGameController implements Initializable
 
     private int nim;
 
+    private int selectedCount;
+
     private int selectedIndex;
 
     @FXML
@@ -91,6 +94,8 @@ public class CircularGameController implements Initializable
         {
             if(playerTurn)
                 playerTurn();
+            else if(getLevel() == GameLevel.EASY)
+                randomPlay();
             else
                 computerMove();
 
@@ -116,7 +121,7 @@ public class CircularGameController implements Initializable
 
     private void ensurePlayerMovement()
     {
-        if(playerTurn && countDown == 0 && selectedIndex == -1)
+        if(playerTurn && countDown == 0 && selectedIndex == -999999)
         {
             int row = 0;
             int column = 0;
@@ -132,6 +137,38 @@ public class CircularGameController implements Initializable
             }
 
             chooseNim(row, column);
+        }
+    }
+
+    private void randomPlay()
+    {
+        Random random = new Random();
+
+        int index = random.nextInt(nims.length);
+
+        while(nims[index] != 1)
+            index = random.nextInt(nims.length);
+
+        int nimCountToRemove = random.nextInt(2) + 1;
+
+        for(int i = 0 ; i < nimCountToRemove ; i++)
+        {
+            for(Node node : gameGrid.getChildren())
+            {
+                int nodeRow = GridPane.getRowIndex(node);
+                int nodeColumn = GridPane.getColumnIndex(node);
+                int nodeIndex = nodeRow * 9 + nodeColumn;
+
+                if(node instanceof AnchorPane && index == nodeIndex)
+                {
+                    index++;
+                    chooseNim(nodeRow, nodeColumn);
+                    break;
+                }
+            }
+
+            if(index == nims.length || nims[index] == 0)
+                break;
         }
     }
 
@@ -163,106 +200,31 @@ public class CircularGameController implements Initializable
     private Move findBestMove(int[] nims, int depth, int alpha, int beta, boolean isComputer)
     {
         Move bestMove = new Move(-1, -1);
-        int bestRate = !isComputer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        int bestRate = isComputer ? Integer.MAX_VALUE : Integer.MIN_VALUE;
 
-        for(int i = 0; i < nims.length; i++)
+        for(int i = 0 ; i < nims.length ; i++)
         {
-            if (nims[i] == 1)
+            for(int length = 1 ; length <= 2 ; length++)
             {
-                int[] newNims = Arrays.copyOf(nims, nims.length);
-                newNims[i] = 0;
-
-                int rate = minimax(newNims, depth - 1, alpha, beta, !isComputer);
-
-                if(!isComputer)
+                if(isValidMove(nims, i, length))
                 {
-                    if (rate > bestRate)
+                    int[] newNims = makeMove(nims, i, length);
+                    int rate = minimax(newNims, depth - 1, alpha, beta, !isComputer);
+
+                    if((isComputer && rate < bestRate) || (!isComputer && rate > bestRate))
                     {
                         bestRate = rate;
-                        bestMove = new Move(i, 1);
-                    }
-                    alpha = Math.max(alpha, rate);
-                }
-                else
-                {
-                    if(rate < bestRate)
-                    {
-                        bestRate = rate;
-                        bestMove = new Move(i, 1);
+                        bestMove = new Move(i, length);
                     }
 
-                    beta = Math.min(beta, rate);
+                    if(isComputer)
+                        beta = Math.min(beta, rate);
+                    else
+                        alpha = Math.max(alpha, rate);
+
+                    if(alpha >= beta)
+                        break;
                 }
-
-                if (alpha >= beta)
-                    break;
-            }
-
-            if(i < nims.length - 1 && nims[i] == 1 && nims[i + 1] == 1)
-            {
-                int[] newNims = Arrays.copyOf(nims, nims.length);
-                newNims[i] = 0;
-                newNims[i + 1] = 0;
-
-                int rate = minimax(newNims, depth - 1, alpha, beta, !isComputer);
-
-                if(!isComputer)
-                {
-                    if(rate > bestRate)
-                    {
-                        bestRate = rate;
-                        bestMove = new Move(i, 2);
-                    }
-
-                    alpha = Math.max(alpha, rate);
-                }
-                else
-                {
-                    if(rate < bestRate)
-                    {
-                        bestRate = rate;
-                        bestMove = new Move(i, 2);
-                    }
-
-                    beta = Math.min(beta, rate);
-                }
-
-                if (alpha >= beta)
-                    break;
-            }
-
-            if (i < nims.length - 2 && nims[i] == 1 && nims[i + 1] == 1 && nims[i + 2] == 1)
-            {
-                int[] newNims = Arrays.copyOf(nims, nims.length);
-                newNims[i] = 0;
-                newNims[i + 1] = 0;
-                newNims[i + 2] = 0;
-
-                int rate = minimax(newNims, depth - 1, alpha, beta, !isComputer);
-
-                if(!isComputer)
-                {
-                    if(rate > bestRate)
-                    {
-                        bestRate = rate;
-                        bestMove = new Move(i, 3);
-                    }
-
-                    alpha = Math.max(alpha, rate);
-                }
-                else
-                {
-                    if(rate < bestRate)
-                    {
-                        bestRate = rate;
-                        bestMove = new Move(i, 3);
-                    }
-
-                    beta = Math.min(beta, rate);
-                }
-
-                if (alpha >= beta)
-                    break;
             }
         }
 
@@ -272,97 +234,73 @@ public class CircularGameController implements Initializable
     private int minimax(int[] nims, int depth, int alpha, int beta, boolean isComputer)
     {
         if(depth == 0 || isGameOver(nims))
-            return !isComputer ? evaluate(nims) : -1;
+            return isComputer ? -1 : evaluate(nims);
 
-        int bestRate = !isComputer ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        int bestRate = isComputer ? Integer.MAX_VALUE : Integer.MIN_VALUE;
 
         for(int i = 0 ; i < nims.length ; i++)
         {
-            if (nims[i] == 1)
+            for(int length = 1 ; length <= 2 ; length++)
             {
-                int[] newNims = Arrays.copyOf(nims, nims.length);
-                newNims[i] = 0;
-
-                int rate = minimax(newNims, depth - 1, alpha, beta, !isComputer);
-
-                if(!isComputer)
+                if(isValidMove(nims, i, length))
                 {
-                    bestRate = Math.max(bestRate, rate);
-                    alpha = Math.max(alpha, rate);
+                    int[] newNims = makeMove(nims, i, length);
+                    int rate = minimax(newNims, depth - 1, alpha, beta, !isComputer);
+
+                    if(isComputer)
+                    {
+                        bestRate = Math.min(bestRate, rate);
+                        beta = Math.min(beta, rate);
+                    }
+                    else
+                    {
+                        bestRate = Math.max(bestRate, rate);
+                        alpha = Math.max(alpha, rate);
+                    }
+
+                    if(alpha >= beta)
+                        break;
                 }
-                else
-                {
-                    bestRate = Math.min(bestRate, rate);
-                    beta = Math.min(beta, rate);
-                }
-
-                if(alpha >= beta)
-                    break;
-            }
-
-            if (i < nims.length - 1 && nims[i] == 1 && nims[i + 1] == 1)
-            {
-                int[] newNims = Arrays.copyOf(nims, nims.length);
-                newNims[i] = 0;
-                newNims[i + 1] = 0;
-
-                int rate = minimax(newNims, depth - 1, alpha, beta, !isComputer);
-
-                if(!isComputer)
-                {
-                    bestRate = Math.max(bestRate, rate);
-                    alpha = Math.max(alpha, rate);
-                }
-                else
-                {
-                    bestRate = Math.min(bestRate, rate);
-                    beta = Math.min(beta, rate);
-                }
-
-                if(alpha >= beta)
-                    break;
-            }
-
-            if (i < nims.length - 2 && nims[i] == 1 && nims[i + 1] == 1 && nims[i + 2] == 1)
-            {
-                int[] newNims = Arrays.copyOf(nims, nims.length);
-                newNims[i] = 0;
-                newNims[i + 1] = 0;
-                newNims[i + 2] = 0;
-
-                int rate = minimax(newNims, depth - 1, alpha, beta, !isComputer);
-
-                if(!isComputer)
-                {
-                    bestRate = Math.max(bestRate, rate);
-                    alpha = Math.max(alpha, rate);
-                }
-                else
-                {
-                    bestRate = Math.min(bestRate, rate);
-                    beta = Math.min(beta, rate);
-                }
-
-                if(alpha >= beta)
-                    break;
             }
         }
 
         return bestRate;
     }
 
-    public int evaluate(int[] nims)
+    private boolean isValidMove(int[] nims, int index, int length)
+    {
+        if(index + length - 1 >= nims.length)
+            return false;
+
+        for(int i = index ; i < index + length ; i++)
+            if(nims[i] != 1)
+                return false;
+
+        return true;
+    }
+
+    private int[] makeMove(int[] nims, int index, int length)
+    {
+        int[] newNims = Arrays.copyOf(nims, nims.length);
+        for(int i = index ; i < index + length ; i++)
+            newNims[i] = 0;
+
+        return newNims;
+    }
+
+    private int evaluate(int[] nims)
     {
         int countOnes = 0;
         for (int nim : nims)
             countOnes += nim;
 
-        return countOnes % 3 == 0 ? 1 : -1;
+        return countOnes % 2 == 0 ? 1 : -1;
     }
 
     private void flipPlayers()
     {
-        selectedIndex = -1;
+        selectedCount = 0;
+        selectedIndex = -999999;
         countDown = time;
         playerTurn = !playerTurn;
         gamePane.setDisable(!playerTurn);
@@ -399,21 +337,24 @@ public class CircularGameController implements Initializable
     {
         int index = row * 9 + column;
 
-        if(selectedIndex == -1)
+        if(selectedIndex == -999999)
             selectedIndex = index;
-        else if(index != (selectedIndex + 1) && index != (selectedIndex - 1) && index != (selectedIndex + 2) && index != (selectedIndex - 2))
+        else if(index != (selectedIndex + 1) && index != (selectedIndex - 1) || selectedCount == 2)
             return;
 
         for(Node node : gameGrid.getChildren())
         {
             if(node instanceof AnchorPane && GridPane.getRowIndex(node) == row && GridPane.getColumnIndex(node) == column)
             {
+                selectedCount++;
+                selectedIndex = index;
                 nims[row * 9 + column] = 0;
                 gameGrid.getChildren().remove(node);
 
                 Pane pane = new Pane();
                 pane.setMinWidth(((AnchorPane) node).getWidth());
                 pane.setMinHeight(((AnchorPane) node).getMinHeight());
+                pane.setStyle("-fx-background-color: lightblue;");
 
                 gameGrid.add(pane, column, row);
                 break;
@@ -464,7 +405,7 @@ public class CircularGameController implements Initializable
             try
             {
                 FXMLLoader fxmlLoader = new FXMLLoader();
-                fxmlLoader.setLocation(getResource("view/circular-game-nim.fxml"));
+                fxmlLoader.setLocation(getResource("view/kayles-game-nim.fxml"));
                 AnchorPane nim = fxmlLoader.load();
 
                 if(columnIndex == 9)
@@ -501,11 +442,12 @@ public class CircularGameController implements Initializable
         nims = new int[nim];
 
         countDown = 0;
-        selectedIndex = -1;
+        selectedCount = 0;
+        selectedIndex = -999999;
 
         Platform.runLater(() -> {
             playerNameLabel.setText(playerName);
-            playerTurn = new Random().nextBoolean();
+            playerTurn = !isComputerStarting();
 
             gamePane.setDisable(!playerTurn);
             timerContainerWidth = playerTimeContainer.getWidth();

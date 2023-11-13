@@ -16,7 +16,7 @@ public class GameSettings
 
     private static final int minTime = 5;
 
-    private static final int maxNim = 36;
+    private static final int maxNim = 20;
 
     private static final int minNim = 10;
 
@@ -29,6 +29,8 @@ public class GameSettings
     private static int time = minTime;
 
     private static int nim = minNim;
+
+    private static boolean isComputerStarting = true;
 
     private static boolean mute = false;
 
@@ -125,6 +127,16 @@ public class GameSettings
     public static int getMinNim()
     {
         return minNim;
+    }
+
+    public static boolean isComputerStarting()
+    {
+        return isComputerStarting;
+    }
+
+    public static void setIsComputerStarting(boolean isComputerStarting)
+    {
+        GameSettings.isComputerStarting = isComputerStarting;
     }
 
     public static void playMusic()

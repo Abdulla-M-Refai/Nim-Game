@@ -37,6 +37,7 @@ import java.util.ResourceBundle;
 import java.io.IOException;
 
 import com.nim.game.model.Move;
+import com.nim.game.model.GameLevel;
 
 import static com.nim.game.util.Helper.*;
 import static com.nim.game.util.GameSettings.*;
@@ -93,6 +94,8 @@ public class StandardGameController implements Initializable
         {
             if(playerTurn)
                 playerTurn();
+            else if(getLevel() == GameLevel.EASY)
+                randomPlay();
             else
                 computerMove();
 
@@ -118,7 +121,7 @@ public class StandardGameController implements Initializable
 
     private void ensurePlayerMovement()
     {
-        if(playerTurn && countDown == 0 && selectedPile == -1)
+        if(playerTurn && countDown == 0 && selectedPile == -999999)
         {
             Random random = new Random();
             int row = random.nextInt(piles.length);
@@ -128,6 +131,28 @@ public class StandardGameController implements Initializable
 
             int column = 0;
 
+            for(Node node : gameGrid.getChildren())
+                if(node instanceof AnchorPane && GridPane.getRowIndex(node) == row)
+                    column = GridPane.getColumnIndex(node);
+
+            chooseNim(row, column);
+        }
+    }
+
+    private void randomPlay()
+    {
+        Random random = new Random();
+
+        int row = random.nextInt(piles.length);
+
+        while(piles[row] == 0)
+            row = random.nextInt(piles.length);
+
+        int nimCountToRemove = random.nextInt(piles[row]) + 1;
+
+        for(int i = 0 ; i < nimCountToRemove ; i++)
+        {
+            int column = 0;
             for(Node node : gameGrid.getChildren())
                 if(node instanceof AnchorPane && GridPane.getRowIndex(node) == row)
                     column = GridPane.getColumnIndex(node);
@@ -237,7 +262,7 @@ public class StandardGameController implements Initializable
 
     private void flipPlayers()
     {
-        selectedPile = -1;
+        selectedPile = -999999;
         countDown = time;
         playerTurn = !playerTurn;
         gamePane.setDisable(!playerTurn);
@@ -272,7 +297,7 @@ public class StandardGameController implements Initializable
 
     private void chooseNim(int row, int column)
     {
-        if(selectedPile == -1)
+        if(selectedPile == -999999)
             selectedPile = row;
 
         for(Node node : gameGrid.getChildren())
@@ -285,6 +310,7 @@ public class StandardGameController implements Initializable
                 Pane pane = new Pane();
                 pane.setMinWidth(((AnchorPane) node).getWidth());
                 pane.setMinHeight(((AnchorPane) node).getMinHeight());
+                pane.setStyle("-fx-background-color: lightblue;");
 
                 gameGrid.add(pane, column, row);
                 break;
@@ -393,11 +419,11 @@ public class StandardGameController implements Initializable
         nim = getNim();
 
         countDown = 0;
-        selectedPile = -1;
+        selectedPile = -999999;
 
         Platform.runLater(() -> {
             playerNameLabel.setText(playerName);
-            playerTurn = new Random().nextBoolean();
+            playerTurn = !isComputerStarting();
 
             gamePane.setDisable(!playerTurn);
             timerContainerWidth = playerTimeContainer.getWidth();

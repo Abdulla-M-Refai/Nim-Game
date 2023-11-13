@@ -21,8 +21,8 @@
       </Label>
       <Pane layoutX="250.0" layoutY="132.0" prefHeight="268.0" prefWidth="295.0" styleClass="game-settings-pane">
          <children>
-            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="300.0" layoutY="-2.0" stroke="BLACK" strokeType="INSIDE" styleClass="game-settings-rectangle" width="300.0" />
-            <Button focusTraversable="false" layoutX="100.0" layoutY="245.0" mnemonicParsing="false" onAction="#play" prefHeight="41.0" prefWidth="99.0" styleClass="shiny-orange" text="play" />
+            <Rectangle arcHeight="5.0" arcWidth="5.0" fill="DODGERBLUE" height="330.0" layoutY="-2.0" stroke="BLACK" strokeType="INSIDE" styleClass="game-settings-rectangle" width="300.0" />
+            <Button focusTraversable="false" layoutX="101.0" layoutY="275.0" mnemonicParsing="false" onAction="#play" prefHeight="41.0" prefWidth="99.0" styleClass="shiny-orange" text="play" />
             <RadioButton fx:id="easy" focusTraversable="false" layoutX="56.0" layoutY="221.0" mnemonicParsing="false" onAction="#setGameLevel" selected="true" text="Easy">
                <toggleGroup>
                   <ToggleGroup fx:id="level" />
@@ -63,6 +63,17 @@
             <Button focusTraversable="false" layoutX="249.0" layoutY="176.0" mnemonicParsing="false" onAction="#decNim" prefHeight="19.0" prefWidth="24.0" styleClass="shiny-orange" text="↓" />
             <TextField fx:id="nameField" focusTraversable="false" layoutX="88.0" layoutY="47.0" prefHeight="30.0" prefWidth="124.0" promptText="Player Name" />
             <Label layoutX="11.0" layoutY="53.0" text="Name">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Label>
+            <RadioButton fx:id="computer" focusTraversable="false" layoutX="65.0" layoutY="248.0" mnemonicParsing="false" onAction="#setStartingPlayer" selected="true" text="Computer">
+               <toggleGroup>
+                  <ToggleGroup fx:id="start" />
+               </toggleGroup>
+            </RadioButton>
+            <RadioButton fx:id="human" focusTraversable="false" layoutX="160.0" layoutY="248.0" mnemonicParsing="false" onAction="#setStartingPlayer" text="Human" toggleGroup="$start" />
+            <Label layoutX="15.0" layoutY="247.0" text="Start">
                <font>
                   <Font name="System Bold" size="13.0" />
                </font>
